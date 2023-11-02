@@ -1,0 +1,235 @@
+SELECT * FROM customer 
+WHERE first_name = 'JAMIE' AND store_id = 1
+;
+
+SELECT * FROM customer 
+WHERE first_name = 'JAMIE' or store_id = 1
+;
+
+SELECT * FROM customer 
+WHERE (first_name != 'STEVEN' or last_name = 'YOUNG') -- != , <>, !(first_name = 'STEVEN') 세개는 똑같은 not이다
+AND  create_date > '2006-01-01'
+;
+
+-- customer 에서 동명이인(first_name) 인사람만 나태나라
+SELECT first_name, COUNT(first_name) AS cnt
+FROM customer
+GROUP BY first_name
+HAVING cnt > 1;
+
+-- rental테이블에서 렌탈한 년도가 2004뇬ㄷㅎ안 랜탈 정보를 보고싶다
+SELECT rental_date, DAYOFMONTH(rental_date)
+FROM rental
+WHERE DAYOFMONTH (rental_date) = 24;
+
+-- rental 테이블에서 렌탈년도가 2005년이 아니고 2006년이 아닌 레코드
+SELECT rental_date, YEAR(rental_date)
+FROM rental
+WHERE  !(YEAR(rental_date) IN (2005, 2006))
+;
+
+SELECT rental_date, YEAR(rental_date)
+FROM rental
+WHERE  YEAR(rental_date) not IN (2005, 2006)
+;
+
+-- rental 테이블에서 2005-05-25 미만 레코드
+SELECT * 
+FROM rental
+WHERE rental_date < '2005-05-25'
+;
+
+-- rental 테이블에서 2005-05-25 미만 레코드
+SELECT * 
+FROM rental
+WHERE ('2005-06-14' < rental_date ) AND (rental_date < '2005-06-16')
+;
+
+SELECT * FROM rental
+WHERE rental_date BETWEEN '2005-06-14' AND '2005-06-16'
+;
+-- BETWEEN 최소값 and 최대값
+-- BETWEEN연산자 이영해 
+SELECT * FROM payment
+WHERE amount BETWEEN 10.00 AND 11.99
+;
+
+SELECT * 
+FROM customer
+WHERE last_name BETWEEN 'FA' AND 'FO'
+;
+
+SELECT * 
+FROM customer
+WHERE last_name >= 'FA' AND last_name<= 'FO'
+;
+
+-- p. 117서브쿼리
+SELECT rating FROM film WHERE title LIKE 'pet%' ;-- SELECT rating FROM film WHERE title 에 pet으로 시작하는 것을  찾겠다
+SELECT rating FROM film WHERE title LIKE '%pet%'; -- SELECT rating FROM film WHERE title 에 pet이 포함된 것만 찾겠다
+SELECT rating FROM film WHERE title LIKE 'pet%'; -- SELECT rating FROM film WHERE title 에 pet으로 끝나는 것만을  찾겠다
+
+SELECT title, rating 
+from film 
+WHERE rating IN (SELECT rating FROM film WHERE title LIKE '%pet%'); -- WHERE절에서 사용하는 서브쿼리는 컬럼갯수가 하나여야 하며 레코드 수 는 상관없다.
+/*
+SELECT title, rating 
+from film 
+WHERE rating = (SELECT rating FROM film WHERE title LIKE '%pet%');
+in 은 여러개가 들어가도 괜찮지만 =은 하나만 담을 수 있기때문에 불가능함.
+ */
+ 
+SELECT rating 
+from film 
+WHERE rating = (SELECT distinct rating FROM film WHERE title LIKE 'pet%'); -- 값이 1나만 나올경우 사용가능
+
+SELECT title, rating 
+from film 
+WHERE rating IN ( 'G', 'PG', 'PG' );
+
+-- 문자열 함수 left, right, mid
+--  LEFT(last_name,2) : 왼쪽 2자리만 가져오겠다.RIGHT(last_name,2): 오른쪽 2자리만 가져오겠다. , 벗어나도 상관없다. ex: last_name,100도 가능
+SELECT last_name, LEFT(last_name,2), RIGHT(last_name,2), MID(last_name, 3,2) -- 3번째자리에서 2자리를 가져오겠다. 시작점과 길이.
+FROM customer;
+
+-- 고객 last_name 이 Q로 시작하는 사람
+SELECT * 
+from customer 
+WHERE LEFT(last_name,1)= 'Q';
+
+-- 와일드 카드 (_, %), _: 1자리 자리차지. %: 0에서부터 무한대 자리차지%:자리차지를 하나도 안할 수잇음
+SELECT * 
+from customer 
+WHERE last_name LIKE '_A_T%S'; 
+-- 첫번째 자리에 어떤 글자가 와도 괜찮음 대신 꼭 있어야함. 두번째자리는 무조건 A 여야함., 3번째 자리자리에 어떤 글자가 와도 괜찮음 대신 꼭 있어야함. 4번째짜리 무조건 T여야함, 5번이후 자리는 없어도/하나라도 여러글자라도 상관없음, 마지막 자리문 무조건 s여야함
+ 
+SELECT * 
+FROM rental
+WHERE return_date is NULL;
+
+SELECT * 
+FROM rental
+WHERE return_date is not NULL;
+
+-- 반납하지 않은 사람의 pk, ㅍ풀네임, 빌려간날짜
+SELECT R.customer_id, concat(C.first_name, '',C.last_name) AS full_name, R.rental_date
+FROM rental as R
+JOIN customer AS C 
+ON R.customer_id = C.customer_id
+JOIN 
+WHERE return_date is NULL
+ORDER BY C.customer_id;
+
+-- p.126
+
+SELECT payment_id
+FROM payment
+WHERE payment_id BETWEEN 101 AND 120 AND customer_id <> 5 AND (amount > 8 OR DATE(payment_date) = '2005-08-23')
+;
+
+SELECT payment_id
+FROM payment
+WHERE payment_id BETWEEN 101 AND 120 AND customer_id = 5 AND not (amount > 6 OR DATE(payment_date) = '2005-06-19')
+;
+
+SELECT *
+FROM payment 
+WHERE amount in ( 1.98, 7.98, 9.98)
+;
+
+SELECT *
+FROM customer
+WHERE last_name LIKE '_AW%';  
+
+-- ch5, p.129
+-- p .131
+SELECT count(*) FROM customer; -- 599r, customer에 fk가 걸려 있고 address가 이걸 참조 하고 있음
+SELECT count(*) FROM address; -- 603r
+
+SELECT A.customer_id, B.address_id -- 361,197r
+FROM customer A
+JOIN address B;
+
+SELECT A.customer_id, B.address_id -- 599r 교집합 inner이 숨어져있음
+FROM customer A
+JOIN address B
+ON A.address_id = B.address_id; 
+
+USE exam;
+SELECT * person;
+
+CREATE TABLE t_adress(
+iaddress INt UNSIGNED AUTO_INCREMENT PRIMARY KEY, 
+NAME VARCHAR(10) NOT NULL
+);
+
+SELECT * 
+FROM t_adress;
+
+INSERT INTO t_adress
+(NAME)
+VALUES 
+('대도시')
+,('도시')
+,('시골');
+
+CREATE TABLE t_customer(
+icustomer INt UNSIGNED AUTO_INCREMENT PRIMARY KEY
+, NAME  VARCHAR(10) NOT NULL
+, msg VARCHAR(30)
+, iaddress INt UNSIGNED NOT NULL
+,FOREIGN KEY(iaddress) REFERENCES t_adress(iaddress) 
+);
+
+CREATE TABLE t_customer2(
+icustomer INt UNSIGNED AUTO_INCREMENT PRIMARY KEY
+, NAME  VARCHAR(10) NOT NULL
+, msg VARCHAR(30)
+, iaddress INt UNSIGNED NOT NULL
+);
+
+SELECT * FROM t_customer;
+SELECT * FROM t_customer2;
+
+INSERT INTO t_customer
+(NAME, iaddress)
+VALUES
+('곽경록',1)
+,('김경현',2)
+,('김동하',3)
+,('김태형',1)
+,('김현빈',2);
+
+INSERT INTO t_customer2
+(NAME, iaddress)
+VALUES
+('곽경록',1)
+,('김경현',2)
+,('김동하',3)
+,('김태형',1)
+,('김현빈',2)
+,('김현수',4)
+,('김현일',5);
+
+DELETE FROM t_customer
+WHERE icustomer > 5;
+
+DELETE FROM t_adress
+WHERE iaddress > 3;
+
+SELECT * FROM t_adress;
+SELECT * FROM t_customer;
+
+SELECT * FROM t_adress A
+JOIN t_customer B
+ON A.iaddress = B.iaddress ;
+
+SELECT * 
+FROM t_customer2 A
+JOIN t_adress B
+ON A.iaddress = B.iaddress ;
+
+SELECT * , IFNULL( B.NAME, '반가워') AS NAME
+FROM t_customer2 A
+left JOIN t_adress B
+ON A.iaddress = B.iaddress ;
