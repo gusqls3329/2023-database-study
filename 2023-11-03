@@ -1,0 +1,227 @@
+SELECT c.first_name, c.last_name, a.address
+FROM customer c, address a
+WHERE c.address_id = a.address_id;
+
+SELECT c.first_name, c.last_name, a.address
+FROM customer c
+join address a
+on c.address_id = a.address_id;
+
+-- 3개 테이블 조인
+SELECT * FROM city;
+SELECT * FROM address;
+SELECT * FROM customer;
+
+-- city_id값이 중복되는 
+SELECT COUNT(city_id), city_id
+FROM address
+GROUP BY city_id
+HAVING  COUNT(city_id)> 1;
+
+SELECT A.address_id, A.address,A.city_id, B.city_id, B.city
+ FROM address A
+ INNER JOIN city B
+ ON A.city_id = B.city_id
+WHERE A.city_id IN (
+SELECT city_id
+FROM address
+GROUP BY city_id
+HAVING  COUNT(city_id)> 1)
+ORDER BY A.city_id;
+
+-- customer의customer_id, first_name, last_name, address, city
+SELECT c.customer_id, c.first_name, c.last_name, a.address, t.city, r.country
+FROM address a 
+JOIN customer c
+ON c.address_id = a.address_id
+JOIN city t
+ON a.city_id = t.city_id
+JOIN country r
+ON r.country_id = t.country_id
+;
+
+-- 조인 with 서브쿼리
+SELECT c.first_name, c.last_name, addr.address, addr.city
+FROM customer c
+INNER JOIN
+(
+SELECT a.address_id, a.address, ct.city
+FROM address a
+JOIN city ct
+oN a.city_id = ct.city_id
+WHERE a.district= 'California'
+) addr
+ON c.address_id = addr.address_id;
+
+-- 배우 이름이 'CATE MCQUEEN' or 'CUBA BIRCH'가 출연한 영화 제목을 알고싶다.
+SELECT * FROM film;
+SELECT * FROM actor;
+SELECT * FROM film_actor;
+
+SELECT f.title, CONCAT(a.first_name, ' ',a.last_name)
+FROM film_actor fc
+JOIN film f
+ON fc.film_id = f.film_id
+JOIN actor a
+ON a.actor_id = fc.actor_id
+WHERE CONCAT(a.first_name, ' ',a.last_name) IN ( 'CATE MCQUEEN', 'CUBA BIRCH')
+;
+
+SELECT f.title, CONCAT(a.first_name, ' ',a.last_name) AS name,f.film_id
+FROM film_actor fc
+JOIN film f
+ON fc.film_id = f.film_id
+JOIN actor a
+ON a.actor_id = fc.actor_id
+WHERE CONCAT(a.first_name, ' ',a.last_name) IN ( 'CATE MCQUEEN', 'CUBA BIRCH')
+GROUP BY f.title
+HAVING  COUNT(f.title) > 1
+;
+
+-- p .142
+SELECT *
+FROM film_actor fa1
+INNER JOIN actor a1
+ON fa1.actor_id= a1.actor_id
+WHERE a1.first_name = 'CATE' AND a1.last_name = 'MCQUEEN'
+;
+SELECT * FROM actor a1
+WHERE a1.first_name = 'CATE' AND a1.last_name = 'MCQUEEN';
+
+
+SELECT *
+FROM film_actor fa2
+INNER JOIN actor a2
+ON fa2.actor_id= a2.actor_id
+WHERE a2.first_name = 'CUBA' AND a2.last_name = 'BIRCH'
+;
+SELECT * FROM actor a2
+WHERE a2.first_name = 'CUBA' AND a2.last_name = 'BIRCH';
+
+-- 위 두결과를 inner join으로 합치자
+SELECT *
+FROM film f
+INNER JOIN film_actor fa1
+ON f.film_id=fa1.film_id
+INNER JOIN actor a1
+ON fa1.actor_id= a1.actor_id
+INNER JOIN film_actor fa2
+ON f.film_id = fa2.film_id
+INNER JOIN actor a2
+ON fa2.actor_id= a2.actor_id
+WHERE a2.first_name = 'CUBA' AND a2.last_name = 'BIRCH'
+AND a1.first_name = 'CATE' AND a1.last_name = 'MCQUEEN'
+;
+-- 위와 같은 코드
+SELECT *
+FROM film f
+INNER JOIN film_actor fa1
+ON f.film_id=fa1.film_id
+INNER JOIN actor a1
+ON fa1.actor_id= a1.actor_id
+AND (a1.first_name = 'CATE' AND a1.last_name = 'MCQUEEN')
+INNER JOIN film_actor fa2
+ON f.film_id = fa2.film_id
+INNER JOIN actor a2
+ON fa2.actor_id= a2.actor_id
+AND (a2.first_name = 'CUBA' AND a2.last_name = 'BIRCH');
+;
+
+-- p.143 셀프 조인
+USE exam;
+CREATE TABLE employees (
+	iemp INT UNSIGNED AUTO_INCREMENT PRIMARY key
+	, NAME VARCHAR(10) not null
+	, iemp_manager INT UNSIGNED
+	, FOREIGN KEY (iemp_manager) REFERENCES employees(iemp)
+);
+
+INSERT INTO employees
+(NAME)
+VALUES 
+('박동현')
+,('배용진')
+,('배환');
+
+SELECT * from employees;
+
+INSERT INTO employees
+(NAME,iemp_manager)
+VALUES
+('백승준',1);
+
+INSERT INTO employees
+(NAME,iemp_manager)
+VALUES
+('양애영',4);
+
+
+-- 사수가 있는 사람만 나와야하고 내 이름과 사수 이름을 출력
+SELECT  a.iemp, b.NAME, a.name
+FROM employees AS a
+JOIN employees AS b
+ON a.iemp = b.iemp_manager
+WHERE b.iemp_manager IS NOT NULL;
+
+-- ㅔ144
+SELECT c.first_name, c.last_name, a.address, ct.city 
+FROM customer c 
+INNER JOIN address a
+ON c.address_id = a.address_id
+INNER JOIN city ct
+ON a.city_id = ct.city_id
+WHERE a.district = 'California';
+
+SELECT * FROM actor;
+SELECT * FROM film;
+SELECT * FROM film_actor;
+
+SELECT f.title
+FROM film_actor fa
+JOIN actor a
+ON fa.actor_id = a.actor_id
+JOIN film f
+on f.film_id = fa.film_id
+WHERE a.first_name = 'JOHN';
+
+SELECT * from address;
+SELECT * from city;
+ 
+SELECT a1.address, a2.address, a1.city_id, a2.city_id
+FROM address AS a1
+JOIN address AS a2
+on (a1.city_id = a2.city_id) where a1.address != a2.address
+;
+
+-- 집합 연산자 : 컬럼의 갯수가 같아야한다, 타입이 맞아야한다(다르다면 강제 형변환이 된다 string으로). 
+-- 위에는 as를 줘야하지만 아래는 줘도 안줘도 괜찮다. 만약 as를 아래에 적지않거나 as가 다르다면,  위의 as를 따른다.
+-- union은 기본적으로 중복제거를 한다
+-- UNION all은 중복이 있어도 값을 낼때 사용한다
+
+SELECT 1 num, 'abc' str, 10
+union
+SELECT 9 , 'xyz' , 1
+UNION all
+SELECT 9 , 'xyz' , 10 ;
+
+-- customer first_name, last_name and actor first_name, last_name을 유니온 해서 모두 나타내라
+SELECT c.first_name  , c.first_name
+FROM customer c
+UNION ALL
+SELECT a.first_name, a.last_name
+FROM actor a;
+
+SELECT first_name, last_name
+FROM customer
+GROUP BY first_name, last_name;
+
+SELECT COUNT(*) FROM customer;
+
+SELECT first_name, last_name
+FROM actor
+GROUP BY CONCAT(first_name, ' ',last_name) 
+HAVING COUNT(*) > 1 
+;
+
+SELECT COUNT(*) FROM actor;
+
