@@ -1,0 +1,75 @@
+USE greengram;
+CREATE TABLE t_user (
+	iuser INT UNSIGNED AUTO_INCREMENT PRIMARY key
+	, uid VARCHAR(25) not null
+	, upw VARCHAR(25) not null
+	, nm VARCHAR(25) not null
+	, pic VARCHAR(100)	
+	, created_at DATETIME NOT NULL DEFAULT current_timestamp
+	, updated_at DATETIME NOT NULL DEFAULT current_timestamp
+	 ON UPDATE current_timestamp
+);
+INSERT INTO t_user
+(uid,upw,nm)
+VALUES
+('mic','1212','홍길동');
+INSERT INTO t_user
+(uid,upw,nm)
+VALUES
+('marine','1212','장보고'),
+('marie','1212','신사임당');
+SELECT *FROM t_user;
+
+UPDATE t_user
+SET nm = '유관순'
+WHERE iuser = 1;
+
+CREATE TABLE t_feed (
+	iuser INT UNSIGNED NOT null
+	, ifeed INT UNSIGNED AUTO_INCREMENT
+	, cntns VARCHAR(1000) 
+	, location VARCHAR(30) 
+   , PRIMARY KEY (ifeed)
+	, FOREIGN KEY (iuser) REFERENCES t_user(iuser)	
+	, created_at DATETIME NOT NULL DEFAULT current_timestamp
+	, updated_at DATETIME NOT NULL DEFAULT current_timestamp
+	 ON UPDATE current_timestamp
+);
+INSERT INTO t_feed
+(iuser,cntns,location)
+VALUES
+( 1, '놀러감' , '써울'),
+( 2, '가고싶다' , '도쿄');
+
+SELECT * FROM t_favorite;
+CREATE TABLE t_favorite (
+	iuser INT UNSIGNED
+	, ifeed INT UNSIGNED
+	, created_at DATETIME NOT NULL DEFAULT current_timestamp
+	, PRIMARY KEY (ifeed, iuser)
+	, FOREIGN KEY (iuser) REFERENCES t_user(iuser)
+	, FOREIGN KEY (ifeed) REFERENCES t_feed(ifeed)
+);
+SELECT * FROM t_favorite;
+INSERT INTO t_favorite
+(ifeed,iuser)
+VALUES
+( 1, 1)
+,( 2, 1);
+
+CREATE TABLE t_feed_pics (
+	 ifeed INT UNSIGNED
+	 , ifeed_pics INT UNSIGNED AUTO_INCREMENT
+	 , pic VARCHAR(100) NOT null
+	 , PRIMARY KEY (ifeed_pics)
+	, FOREIGN KEY (ifeed) REFERENCES t_feed(ifeed)
+	, created_at DATETIME NOT NULL DEFAULT current_timestamp
+	, updated_at DATETIME NOT NULL DEFAULT current_timestamp
+	 ON UPDATE current_timestamp
+);
+SELECT * FROM t_feed_pics;
+
+INSERT INTO t_feed_pics
+(ifeed,pic)
+VALUES
+( 1, 'aaa.jpg');
